@@ -2,14 +2,14 @@
 
 namespace Lexik\Bundle\MaintenanceBundle\Listener;
 
+use ErrorException;
 use Lexik\Bundle\MaintenanceBundle\Drivers\DriverFactory;
 use Lexik\Bundle\MaintenanceBundle\Exception\ServiceUnavailableException;
 use Symfony\Component\HttpFoundation\IpUtils;
-use Symfony\Component\HttpKernel\Event\FilterResponseEvent;
-use Symfony\Component\HttpKernel\Event\GetResponseEvent;
+use Symfony\Component\HttpKernel\Event\ResponseEvent as FilterResponseEvent;
+use Symfony\Component\HttpKernel\Event\RequestEvent as GetResponseEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
-
+use Symfony\Component\Security\Core\Authentication\Token\Storage\UsageTrackingTokenStorage as TokenStorage;
 /**
  * Listener to decide if user can access to the site
  *
@@ -21,7 +21,7 @@ class MaintenanceListener
     /**
      * Service driver factory
      *
-     * @var \Lexik\Bundle\MaintenanceBundle\Drivers\DriverFactory
+     * @var DriverFactory
      */
     protected $driverFactory;
 
@@ -111,19 +111,19 @@ class MaintenanceListener
      *  incoming request.
      *
      * @param DriverFactory $driverFactory The driver factory
-     * @param String $role maintenance must have role
-     * @param String $path A regex for the path
-     * @param String $host A regex for the host
-     * @param array $ips The list of IP addresses
+     * @param TokenStorage $tokenStorage token storage to check user role
+     * @param null $role maintenance must have role
+     * @param null $path A regex for the path
+     * @param null $host A regex for the host
+     * @param null $ips The list of IP addresses
      * @param array $query Query arguments
      * @param array $cookie Cookies
-     * @param String $route Route name
+     * @param null $route Route name
      * @param array $attributes Attributes
-     * @param Int $http_code http status code for response
-     * @param String $http_status http status message for response
+     * @param null $http_code http status code for response
+     * @param null $http_status http status message for response
      * @param null $http_exception_message http response page exception message
      * @param bool $debug
-     * @param TokenStorage $tokenStorage token storage to check user role
      */
     public function __construct(
         DriverFactory $driverFactory,
@@ -163,7 +163,7 @@ class MaintenanceListener
      *
      * @return void
      *
-     * @throws ServiceUnavailableException
+     * @throws ServiceUnavailableException|ErrorException
      */
     public function onKernelRequest(GetResponseEvent $event)
     {
@@ -234,7 +234,7 @@ class MaintenanceListener
      * @param string|array $ips
      * @return boolean
      */
-    protected function checkIps($requestedIp, $ips)
+    protected function checkIps(string $requestedIp, $ips)
     {
         $ips = (array)$ips;
 
@@ -271,10 +271,10 @@ class MaintenanceListener
 
     private function hasExpectedRole()
     {
-        $roles = $this->tokenStorage->getToken()->getRoles();
+        $roles = $this->tokenStorage->getToken()->getRoleNames();
 
         foreach ($roles as $role) {
-            if ($this->role === $role->getRole()) {
+            if ($this->role === $role) {
                 return true;
             }
         }
