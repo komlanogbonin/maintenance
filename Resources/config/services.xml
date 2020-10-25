@@ -41,6 +41,7 @@
         </service>
 
         <service id="Lexik\Bundle\MaintenanceBundle\Command\DriverUnlockCommand" class="Lexik\Bundle\MaintenanceBundle\Command\DriverUnlockCommand">
+            <argument type="service" id="lexik_maintenance.driver.factory"/>
             <tag name="console.command"/>
         </service>
     </services>

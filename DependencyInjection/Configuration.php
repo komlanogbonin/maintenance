@@ -20,8 +20,8 @@ class Configuration implements ConfigurationInterface
      */
     public function getConfigTreeBuilder()
     {
-        $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('lexik_maintenance');
+        $treeBuilder = new TreeBuilder('lexik_maintenance');
+        $rootNode = $treeBuilder->getRootNode();
 
         $rootNode
             ->addDefaultsIfNotSet()
@@ -30,7 +30,8 @@ class Configuration implements ConfigurationInterface
                     ->addDefaultsIfNotSet()
                     ->children()
                         ->scalarNode('role')
-                            ->defaultNull('ROLE_MAINTAINER')
+                            ->defaultValue('ROLE_MAINTAINER')
+                            ->defaultNull()
                         ->end()
                         ->scalarNode('path')
                             ->defaultNull()

@@ -2,9 +2,11 @@
 
 namespace Lexik\Bundle\MaintenanceBundle\Command;
 
+use ErrorException;
+use Lexik\Bundle\MaintenanceBundle\Drivers\DriverFactory;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Command\Command;
 
 /**
  * Create an unlock action
@@ -12,8 +14,23 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
  * @package LexikMaintenanceBundle
  * @author  Gilles Gauthier <g.gauthier@lexik.fr>
  */
-class DriverUnlockCommand extends ContainerAwareCommand
+class DriverUnlockCommand extends Command
 {
+    /**
+     * @var DriverFactory
+     */
+    private $factory;
+
+    /**
+     * DriverUnlockCommand constructor.
+     * @param DriverFactory $factory
+     */
+    public function __construct(DriverFactory $factory)
+    {
+        parent::__construct(self::$defaultName);
+        $this->factory = $factory;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -32,6 +49,7 @@ EOT
 
     /**
      * {@inheritdoc}
+     * @throws ErrorException
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
@@ -39,7 +57,7 @@ EOT
             return;
         }
 
-        $driver = $this->getContainer()->get('lexik_maintenance.driver.factory')->getDriver();
+        $driver = $this->factory->getDriver();
 
         $unlockMessage = $driver->getMessageUnlock($driver->unlock());
 
@@ -55,7 +73,7 @@ EOT
     {
         $formatter = $this->getHelperSet()->get('formatter');
 
-        if ($input->getOption('no-interaction', false)) {
+        if ($input->getOption('no-interaction')) {
             $confirmation = true;
         } else {
             // confirm

@@ -2,6 +2,7 @@
 
 namespace Lexik\Bundle\MaintenanceBundle\Command;
 
+use ErrorException;
 use Lexik\Bundle\MaintenanceBundle\Drivers\AbstractDriver;
 use Lexik\Bundle\MaintenanceBundle\Drivers\DriverFactory;
 use Lexik\Bundle\MaintenanceBundle\Drivers\DriverTtlInterface;
@@ -12,7 +13,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 
 /**
  * Create a lock action
@@ -32,7 +32,7 @@ class DriverLockCommand extends Command
      */
     private $factory;
 
-    public function __construct($factory)
+    public function __construct(DriverFactory $factory)
     {
         $this->factory = $factory;
         parent::__construct(self::$defaultName);
@@ -68,6 +68,7 @@ EOT
 
     /**
      * {@inheritdoc}
+     * @throws ErrorException
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
@@ -95,6 +96,7 @@ EOT
 
     /**
      * {@inheritdoc}
+     * @throws ErrorException
      */
     protected function interact(InputInterface $input, OutputInterface $output)
     {
@@ -155,11 +157,11 @@ EOT
      * Get driver
      *
      * @return AbstractDriver
+     * @throws ErrorException
      */
     private function getDriver()
     {
         return $this->factory->getDriver();
-//        return $this->getContainer()->get('lexik_maintenance.driver.factory')->getDriver();
     }
 
     /**
